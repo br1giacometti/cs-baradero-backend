@@ -1,0 +1,29 @@
+version: "3.8"
+
+volumes:
+  mysql-data:
+
+services:
+  mysqldb:
+    image: mysql:8.0
+    container_name: mysqldb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    ports:
+      - ${MYSQL_EXPOSE_PORT}:${MYSQL_DOCKER_PORT}
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  backend:
+    container_name: backend
+    build: .
+    depends_on:
+      - mysqldb
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      PORT: ${PORT}
+    ports:
+      - ${PORT}:${PORT}
