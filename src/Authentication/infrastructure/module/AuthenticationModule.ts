@@ -3,14 +3,18 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 
-import AuthenticationController from '../controller/AuthenticationController';
-import AuthenticationService from '../../application/service/AuthenticationService';
-import UserDataProvider from '../dataProvider/UserDataProvider';
-import UserRepository from 'Authentication/application/repository/UserRepository';
+import PlayerDataProvider from '../dataProvider/PlayerDataProvider';
+import PlayerRepository from 'Authentication/application/repository/PlayerRepository';
 
-import JwtStrategy from 'Authentication/infrastructure/strategy/JwtStrategy';
-import LocalStrategy from 'Authentication/infrastructure/strategy/LocalStrategy';
-import UserService from 'Authentication/application/service/UserService';
+import PlayerService from 'Authentication/application/service/PlayerService';
+import PlayerController from '../controller/PlayerController';
+import JornadaController from '../controller/JornadaController';
+import PartidoService from 'Authentication/application/service/PartidoService';
+import JornadaService from 'Authentication/application/service/JornadaService';
+import PartidoRepository from 'Authentication/application/repository/PartidoRepository';
+import PartidoDataProvider from '../dataProvider/PartidoDataProvider';
+import JornadaRepository from 'Authentication/application/repository/JornadaRepository';
+import JornadaDataProvider from '../dataProvider/JornadaDataProvider';
 
 const jwtFactory = {
   imports: [ConfigModule],
@@ -25,17 +29,24 @@ const jwtFactory = {
 
 @Module({
   imports: [JwtModule.registerAsync(jwtFactory), PassportModule],
-  controllers: [AuthenticationController],
+  controllers: [PlayerController, JornadaController],
   providers: [
-    AuthenticationService,
-    LocalStrategy,
-    UserService,
-    JwtStrategy,
+    PlayerService,
     {
-      provide: UserRepository,
-      useClass: UserDataProvider,
+      provide: PlayerRepository,
+      useClass: PlayerDataProvider,
+    },
+    PartidoService,
+    {
+      provide: PartidoRepository,
+      useClass: PartidoDataProvider,
+    },
+    JornadaService,
+    {
+      provide: JornadaRepository,
+      useClass: JornadaDataProvider,
     },
   ],
-  exports: [AuthenticationService, JwtModule, JwtStrategy, PassportModule],
+  exports: [PlayerService, PassportModule, PartidoService, JornadaService],
 })
 export default class UserModule {}
