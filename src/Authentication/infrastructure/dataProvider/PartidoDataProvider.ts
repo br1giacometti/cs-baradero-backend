@@ -109,6 +109,7 @@ export default class PartidoDataProvider implements PartidoRepository {
       partidoEntity.mapa,
       undefined,
       undefined,
+      undefined,
       partidoEntity.id,
     );
   }

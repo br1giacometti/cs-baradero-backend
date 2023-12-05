@@ -15,6 +15,9 @@ import PartidoRepository from 'Authentication/application/repository/PartidoRepo
 import PartidoDataProvider from '../dataProvider/PartidoDataProvider';
 import JornadaRepository from 'Authentication/application/repository/JornadaRepository';
 import JornadaDataProvider from '../dataProvider/JornadaDataProvider';
+import PuntuacionService from 'Authentication/application/service/PuntuacionService';
+import PuntuacionRepository from 'Authentication/application/repository/PuntuacionRepository';
+import PuntuacionDataProvider from '../dataProvider/PuntuacionDataProvider';
 
 const jwtFactory = {
   imports: [ConfigModule],
@@ -46,7 +49,18 @@ const jwtFactory = {
       provide: JornadaRepository,
       useClass: JornadaDataProvider,
     },
+    PuntuacionService,
+    {
+      provide: PuntuacionRepository,
+      useClass: PuntuacionDataProvider,
+    },
   ],
-  exports: [PlayerService, PassportModule, PartidoService, JornadaService],
+  exports: [
+    PlayerService,
+    PassportModule,
+    PartidoService,
+    JornadaService,
+    PuntuacionService,
+  ],
 })
 export default class UserModule {}

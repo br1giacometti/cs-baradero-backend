@@ -40,12 +40,12 @@ export default class PlayerDataProvider implements PlayerRepository {
     return PlayerEntity ? this.mapEntityToDomain(PlayerEntity) : null;
   }
 
-  async findUserByTag(tag: string): Promise<Player | null> {
-    const PlayerEntity = await this.client.findUnique({
-      where: { tag },
-    });
-    return PlayerEntity ? this.mapEntityToDomain(PlayerEntity) : null;
-  }
+  //async findUserByTag(tag: string): Promise<Player | null> {
+  //const PlayerEntity = await this.client.findUnique({
+  //where: { tag },
+  //});
+  //return PlayerEntity ? this.mapEntityToDomain(PlayerEntity) : null;
+  //}
 
   async findAndCountWithQuery(
     skip: number,
@@ -74,7 +74,11 @@ export default class PlayerDataProvider implements PlayerRepository {
   }
 
   async findAll(): Promise<Player[]> {
-    const users = await this.client.findMany();
+    const users = await this.client.findMany({
+      include: {
+        puntuaciones: true,
+      },
+    });
 
     return users.map((PlayerEntity) => this.mapEntityToDomain(PlayerEntity));
   }
@@ -109,6 +113,7 @@ export default class PlayerDataProvider implements PlayerRepository {
       PlayerEntity.tag,
       PlayerEntity.firstName,
       PlayerEntity.lastName,
+      PlayerEntity.totalPuntos,
       PlayerEntity.id,
     );
   }

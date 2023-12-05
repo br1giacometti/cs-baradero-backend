@@ -11,26 +11,38 @@ datasource db {
 }
 
 model Player {
-  id           Int       @id @default(autoincrement())
-  tag          String    @unique
+  id           Int          @id @default(autoincrement())
+  tag          String
   firstName    String
   lastName     String
-  partidosDeCt Partido[] @relation(name: "EquipoCT")
-  partidosDeTT Partido[] @relation(name: "EquipoTT")
+  partidosDeCt Partido[]    @relation(name: "EquipoCT")
+  partidosDeTT Partido[]    @relation(name: "EquipoTT")
+  puntuaciones Puntuacion[]
+  totalPuntos  Int?         @default(0)
 }
 
 model Partido {
-  id        Int      @id @default(autoincrement())
-  numero    Int
-  mapa      String
-  equipoCT  Player[] @relation(name: "EquipoCT")
-  equipoTT  Player[] @relation(name: "EquipoTT")
-  Jornada   Jornada? @relation(fields: [jornadaId], references: [id])
-  jornadaId Int?
+  id           Int          @id @default(autoincrement())
+  numero       Int
+  mapa         String
+  equipoCT     Player[]     @relation(name: "EquipoCT")
+  equipoTT     Player[]     @relation(name: "EquipoTT")
+  Jornada      Jornada?     @relation(fields: [jornadaId], references: [id])
+  jornadaId    Int?
+  puntuaciones Puntuacion[]
 }
 
 model Jornada {
   id       Int       @id @default(autoincrement())
   fecha    DateTime
   partidos Partido[]
+}
+
+model Puntuacion {
+  id              Int     @id @default(autoincrement())
+  puntosObtenidos Int
+  jugador         Player  @relation(fields: [jugadorId], references: [id])
+  jugadorId       Int
+  partido         Partido @relation(fields: [partidoId], references: [id])
+  partidoId       Int
 }

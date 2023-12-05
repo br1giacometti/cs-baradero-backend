@@ -1,4 +1,5 @@
 import Player from './Player';
+import Puntuacion from './Puntuacion';
 
 export default class Partido {
   numero: number;
@@ -13,6 +14,7 @@ export default class Partido {
     mapa: string,
     equipoCT: Player[],
     equipoTT: Player[],
+
     jornadaId?: number,
     id?: number,
   ) {

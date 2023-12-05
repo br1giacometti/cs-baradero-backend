@@ -7,7 +7,7 @@ import PrismaClient from 'Base/config/prisma/PrismaClient';
 import PartidoEntity from '../entity/PartidoEntity';
 import Partido from 'Authentication/domain/models/Partido';
 import PlayerEntity from '../entity/PlayerEntity';
-import PartidoDataProvider from './PartidoDataProvider';
+import Player from 'Authentication/domain/models/Player';
 
 @Injectable()
 export default class JornadaDataProvider implements JornadaRepository {
@@ -20,22 +20,29 @@ export default class JornadaDataProvider implements JornadaRepository {
   }
 
   async insert(jornada: Jornada): Promise<Jornada> {
-    const partidos = jornada.partidos.map((partido) =>
-      this.mapPartidosDomainToPartidosCreateEntity(partido),
-    );
-    const JornadaEntity = await this.client.create({
-      data: {
-        fecha: new Date(),
-        partidos: {
-          create: partidos,
-        },
-      },
-      include: {
-        partidos: { include: { equipoCT: true, equipoTT: true } },
-      },
-    });
+    try {
+      const partidos = jornada.partidos.map((partido) =>
+        this.mapPartidosDomainToPartidosCreateEntity(partido),
+      );
 
-    return JornadaDataProvider.mapEntityToDomain(JornadaEntity);
+      const JornadaEntity = await this.client.create({
+        data: {
+          fecha: new Date(),
+          partidos: {
+            create: partidos,
+          },
+        },
+        include: {
+          partidos: { include: { equipoCT: true, equipoTT: true } },
+        },
+      });
+
+      return JornadaDataProvider.mapEntityToDomain(JornadaEntity);
+    } catch (error) {
+      console.error('Error al insertar la jornada:', error);
+      // Puedes manejar el error aquí, lanzar una excepción diferente o devolver un valor predeterminado
+      throw new Error('No se pudo insertar la jornada.');
+    }
   }
 
   async findById(id: number): Promise<Jornada | null> {
@@ -163,6 +170,10 @@ export default class JornadaDataProvider implements JornadaRepository {
   private mapPartidosDomainToPartidosCreateEntity(
     partido: Partido,
   ): Prisma.PartidoCreateWithoutJornadaInput {
+    const puntuaciones = partido.equipoCT.map((player, index) =>
+      this.mapQuotasDomainToQuotasCreateEntity(player),
+    );
+
     return {
       numero: partido.numero,
       mapa: partido.mapa,
@@ -172,6 +183,16 @@ export default class JornadaDataProvider implements JornadaRepository {
       equipoTT: {
         connect: partido.equipoTT.map((player) => ({ id: player.id })),
       },
+      puntuaciones: { create: puntuaciones },
+    };
+  }
+
+  private mapQuotasDomainToQuotasCreateEntity(
+    jugador: Player,
+  ): Prisma.PuntuacionCreateWithoutPartidoInput {
+    return {
+      puntosObtenidos: 10,
+      jugador: { connect: { id: jugador.id } },
     };
   }
 }

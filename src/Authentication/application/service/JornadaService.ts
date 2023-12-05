@@ -6,10 +6,14 @@ import JornadaRepository from '../repository/JornadaRepository';
 import UserDoesntExistsException from '../exception/UserDoesntExistsException';
 import CreateJornadaDto from '../dto/CreateJornadaDto';
 import PaginationMetaDto from 'Base/dto/PaginationMetaDto';
+import PuntuacionService from './PuntuacionService';
 
 @Injectable()
 export default class JornadaService {
-  constructor(private readonly repository: JornadaRepository) {}
+  constructor(
+    private readonly repository: JornadaRepository,
+    private readonly puntiacionService: PuntuacionService,
+  ) {}
 
   async createJornada(userDto: CreateJornadaDto): Promise<Jornada> {
     const user = new Jornada(userDto.partidos);

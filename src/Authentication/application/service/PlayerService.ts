@@ -41,15 +41,15 @@ export default class PlayerService {
     return user;
   }
 
-  async findUserByEmail(tag: string): Promise<Player> {
-    const user = await this.repository.findUserByTag(tag);
+  //async findUserByEmail(tag: string): Promise<Player> {
+  //const user = await this.repository.findUserByTag(tag);
 
-    if (user === null) {
-      throw new UserDoesntExistsException();
-    }
+  // if (user === null) {
+  //  throw new UserDoesntExistsException();
+  //}
 
-    return user;
-  }
+  // return user;
+  //}
 
   async getAllPaginationWithQuery(
     page: number,
