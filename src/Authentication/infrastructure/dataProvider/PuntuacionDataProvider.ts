@@ -116,6 +116,11 @@ export default class PuntuacionDataProvider implements PuntuacionRepository {
   public static mapEntityToDomain(
     PuntuacionEntity: PuntuacionEntity,
   ): Puntuacion {
-    return new Puntuacion(undefined, undefined, undefined, PuntuacionEntity.id);
+    return new Puntuacion(
+      PuntuacionEntity.puntosObtenidos,
+      undefined,
+      undefined,
+      PuntuacionEntity.id,
+    );
   }
 }

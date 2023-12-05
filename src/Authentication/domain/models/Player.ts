@@ -4,6 +4,7 @@ export default class Player {
   tag: string;
   firstName: string;
   lastName: string;
+  puntuaciones?: Puntuacion[];
   totalPuntos?: number;
   id?: number;
 
@@ -11,12 +12,14 @@ export default class Player {
     tag: string,
     firstName: string,
     lastName: string,
+    puntuaciones?: Puntuacion[],
     totalPuntos?: number,
     id?: number,
   ) {
     this.tag = tag;
     this.firstName = firstName;
     this.lastName = lastName;
+    this.puntuaciones = puntuaciones;
     this.totalPuntos = totalPuntos;
     this.id = id;
   }

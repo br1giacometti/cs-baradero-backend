@@ -7,6 +7,7 @@ import PlayerRepository from 'Authentication/application/repository/PlayerReposi
 
 import PlayerEntity from '../entity/PlayerEntity';
 import Player from 'Authentication/domain/models/Player';
+import Puntuacion from 'Authentication/domain/models/Puntuacion';
 
 @Injectable()
 export default class PlayerDataProvider implements PlayerRepository {
@@ -35,6 +36,7 @@ export default class PlayerDataProvider implements PlayerRepository {
       where: {
         id: typeof id === 'string' ? parseInt(id, 10) : id,
       },
+      include: { puntuaciones: true },
     });
 
     return PlayerEntity ? this.mapEntityToDomain(PlayerEntity) : null;
@@ -109,11 +111,24 @@ export default class PlayerDataProvider implements PlayerRepository {
   }
 
   private mapEntityToDomain(PlayerEntity: PlayerEntity): Player {
+    const puntuaciones = PlayerEntity.puntuaciones
+      ? PlayerEntity.puntuaciones.map((puntuacionEntity) => {
+          return new Puntuacion(
+            puntuacionEntity.puntosObtenidos,
+            undefined,
+            undefined,
+          );
+        })
+      : [];
+
     return new Player(
       PlayerEntity.tag,
       PlayerEntity.firstName,
       PlayerEntity.lastName,
-      PlayerEntity.totalPuntos,
+      puntuaciones,
+      puntuaciones.reduce((total, puntuacion) => {
+        return total + puntuacion.puntosObtenidos;
+      }, 0),
       PlayerEntity.id,
     );
   }

@@ -134,8 +134,8 @@ export default class JornadaDataProvider implements JornadaRepository {
   public static mapEntityToDomain(
     jornadaEntity: JornadaEntity & {
       partidos: (PartidoEntity & {
-        equipoCT: PlayerEntity[];
-        equipoTT: PlayerEntity[];
+        equipoCT?: PlayerEntity[];
+        equipoTT?: PlayerEntity[];
       })[];
     },
   ): Jornada {
@@ -171,7 +171,13 @@ export default class JornadaDataProvider implements JornadaRepository {
     partido: Partido,
   ): Prisma.PartidoCreateWithoutJornadaInput {
     const puntuaciones = partido.equipoCT.map((player, index) =>
-      this.mapQuotasDomainToQuotasCreateEntity(player),
+      this.mapQuotasDomainToQuotasCreateEntity(player, index),
+    );
+
+    puntuaciones.push(
+      ...partido.equipoTT.map((player, index) =>
+        this.mapQuotasDomainToQuotasCreateEntity(player, index),
+      ),
     );
 
     return {
@@ -183,15 +189,18 @@ export default class JornadaDataProvider implements JornadaRepository {
       equipoTT: {
         connect: partido.equipoTT.map((player) => ({ id: player.id })),
       },
-      puntuaciones: { create: puntuaciones },
+      puntuaciones: {
+        create: puntuaciones,
+      },
     };
   }
 
   private mapQuotasDomainToQuotasCreateEntity(
     jugador: Player,
+    index: number,
   ): Prisma.PuntuacionCreateWithoutPartidoInput {
     return {
-      puntosObtenidos: 10,
+      puntosObtenidos: JornadaDataProvider.calcularPuntuacion(index),
       jugador: { connect: { id: jugador.id } },
     };
   }

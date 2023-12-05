@@ -3,8 +3,8 @@ import Player from './Player';
 
 export default class Puntuacion {
   puntosObtenidos: number;
-  jugador: Player;
-  partido: Partido;
+  jugador?: Player;
+  partido?: Partido;
   id?: number;
 
   constructor(
