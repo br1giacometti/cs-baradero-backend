@@ -30,6 +30,8 @@ export default class PartidoDataProvider implements PartidoRepository {
         equipoTT: {
           connect: partido.equipoTT.map((player) => ({ id: player.id })),
         },
+        rondasCT: partido.rondasCT,
+        rondasTT: partido.rondasTT,
         Jornada: { connect: { id: jornadaId } },
       },
       include: { Jornada: true },

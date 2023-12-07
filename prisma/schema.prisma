@@ -11,14 +11,19 @@ datasource db {
 }
 
 model Player {
-  id           Int          @id @default(autoincrement())
-  tag          String
-  firstName    String
-  lastName     String
-  partidosDeCt Partido[]    @relation(name: "EquipoCT")
-  partidosDeTT Partido[]    @relation(name: "EquipoTT")
-  puntuaciones Puntuacion[]
-  totalPuntos  Int?         @default(0)
+  id                     Int          @id @default(autoincrement())
+  tag                    String
+  firstName              String
+  lastName               String
+  partidosDeCt           Partido[]    @relation(name: "EquipoCT")
+  partidosDeTT           Partido[]    @relation(name: "EquipoTT")
+  puntuaciones           Puntuacion[]
+  totalPuntos            Int?         @default(0)
+  totalGanados           Int          @default(0)
+  totalPerdidos          Int          @default(0)
+  totalJornadasGanadas   Int          @default(0)
+  totalJornadasPerdidas  Int          @default(0)
+  totalJornadasEmpatadas Int          @default(0)
 }
 
 model Partido {
@@ -27,6 +32,8 @@ model Partido {
   mapa         String
   equipoCT     Player[]     @relation(name: "EquipoCT")
   equipoTT     Player[]     @relation(name: "EquipoTT")
+  rondasCT     Int
+  rondasTT     Int
   Jornada      Jornada?     @relation(fields: [jornadaId], references: [id])
   jornadaId    Int?
   puntuaciones Puntuacion[]
@@ -39,10 +46,28 @@ model Jornada {
 }
 
 model Puntuacion {
-  id              Int     @id @default(autoincrement())
-  puntosObtenidos Int
-  jugador         Player  @relation(fields: [jugadorId], references: [id])
-  jugadorId       Int
-  partido         Partido @relation(fields: [partidoId], references: [id])
-  partidoId       Int
+  id                Int     @id @default(autoincrement())
+  puntosObtenidos   Int
+  jugador           Player  @relation(fields: [jugadorId], references: [id])
+  jugadorId         Int
+  partido           Partido @relation(fields: [partidoId], references: [id])
+  partidoId         Int
+  partidosGanados   Int     @default(0)
+  partidosPerdidos  Int     @default(0)
+  jornadasEmpatados Int     @default(0)
+  jornadasGanadas   Int     @default(0)
+  jornadasPerdidas  Int     @default(0)
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  name     String?
+  password String
+  role     Role    @default(USER)
+}
+
+enum Role {
+  ADMIN
+  USER
 }

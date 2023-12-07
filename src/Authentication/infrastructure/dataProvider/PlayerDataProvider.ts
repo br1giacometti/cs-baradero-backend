@@ -20,15 +20,21 @@ export default class PlayerDataProvider implements PlayerRepository {
   }
 
   async insert(user: Player): Promise<Player> {
-    const PlayerEntity = await this.client.create({
-      data: {
-        tag: user.tag,
-        firstName: user.firstName,
-        lastName: user.lastName,
-      },
-    });
+    try {
+      const PlayerEntity = await this.client.create({
+        data: {
+          tag: user.tag,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        },
+      });
 
-    return this.mapEntityToDomain(PlayerEntity);
+      return PlayerDataProvider.mapEntityToDomain(PlayerEntity);
+    } catch (error) {
+      console.error('Error al insertar la jornada:', error);
+      // Puedes manejar el error aquí, lanzar una excepción diferente o devolver un valor predeterminado
+      throw new Error('No se pudo insertar la jornada.');
+    }
   }
 
   async findById(id: number): Promise<Player | null> {
@@ -39,7 +45,9 @@ export default class PlayerDataProvider implements PlayerRepository {
       include: { puntuaciones: true },
     });
 
-    return PlayerEntity ? this.mapEntityToDomain(PlayerEntity) : null;
+    return PlayerEntity
+      ? PlayerDataProvider.mapEntityToDomain(PlayerEntity)
+      : null;
   }
 
   //async findUserByTag(tag: string): Promise<Player | null> {
@@ -65,14 +73,21 @@ export default class PlayerDataProvider implements PlayerRepository {
           { tag: { contains: query } },
         ],
       },
+      include: { puntuaciones: true },
     });
 
     const count = await this.client.count();
 
-    return [
-      players.map((PlayerEntity) => this.mapEntityToDomain(PlayerEntity)),
-      count,
-    ];
+    // Ordenar los jugadores por totalPuntos / totalPartidos en orden descendente
+    const sortedPlayers = players
+      .map((PlayerEntity) => PlayerDataProvider.mapEntityToDomain(PlayerEntity))
+      .sort((a, b) => {
+        const ratioA = a.totalPuntos / (a.totalGanados + a.totalPerdidos);
+        const ratioB = b.totalPuntos / (b.totalGanados + b.totalPerdidos);
+        return ratioB - ratioA;
+      });
+
+    return [sortedPlayers, count];
   }
 
   async findAll(): Promise<Player[]> {
@@ -82,7 +97,9 @@ export default class PlayerDataProvider implements PlayerRepository {
       },
     });
 
-    return users.map((PlayerEntity) => this.mapEntityToDomain(PlayerEntity));
+    return users.map((PlayerEntity) =>
+      PlayerDataProvider.mapEntityToDomain(PlayerEntity),
+    );
   }
 
   async delete(id: number): Promise<Player> {
@@ -92,7 +109,7 @@ export default class PlayerDataProvider implements PlayerRepository {
       },
     });
 
-    return this.mapEntityToDomain(PlayerEntity);
+    return PlayerDataProvider.mapEntityToDomain(PlayerEntity);
   }
 
   async update(id: number, partialUser: Partial<Player>): Promise<Player> {
@@ -107,29 +124,54 @@ export default class PlayerDataProvider implements PlayerRepository {
       },
     });
 
-    return this.mapEntityToDomain(PlayerEntity);
+    return PlayerDataProvider.mapEntityToDomain(PlayerEntity);
   }
 
-  private mapEntityToDomain(PlayerEntity: PlayerEntity): Player {
-    const puntuaciones = PlayerEntity.puntuaciones
-      ? PlayerEntity.puntuaciones.map((puntuacionEntity) => {
+  public static mapEntityToDomain(playerEntity: PlayerEntity): Player {
+    const puntuaciones = playerEntity.puntuaciones
+      ? playerEntity.puntuaciones.map((puntuacionEntity) => {
           return new Puntuacion(
             puntuacionEntity.puntosObtenidos,
-            undefined,
-            undefined,
+            puntuacionEntity.partidosGanados,
+            puntuacionEntity.partidosPerdidos,
+            puntuacionEntity.jornadasGanadas,
+            puntuacionEntity.jornadasPerdidas,
+            puntuacionEntity.jornadasEmpatados,
           );
         })
       : [];
 
+    const cantidadPartidosJugados = puntuaciones.length;
+
+    let totalPuntos = 0;
+    let totalPartidosGanados = 0;
+    let totalPartidosPerdidos = 0;
+    let totalJornadasGanadas = 0;
+    let totalJornadasEmpatados = 0;
+    let totalJornadasPerdidas = 0;
+
+    puntuaciones.forEach((puntuacion) => {
+      totalPuntos += puntuacion.puntosObtenidos;
+      totalPartidosGanados += puntuacion.partidosGanados;
+      totalPartidosPerdidos += puntuacion.partidosPerdidos;
+      totalJornadasGanadas += puntuacion.jornadasGanadas;
+      totalJornadasEmpatados += puntuacion.jornadasEmpatados;
+      totalJornadasPerdidas += puntuacion.jornadasPerdidas;
+    });
+
     return new Player(
-      PlayerEntity.tag,
-      PlayerEntity.firstName,
-      PlayerEntity.lastName,
-      puntuaciones,
-      puntuaciones.reduce((total, puntuacion) => {
-        return total + puntuacion.puntosObtenidos;
-      }, 0),
-      PlayerEntity.id,
+      playerEntity.tag,
+      playerEntity.firstName,
+      playerEntity.lastName,
+      undefined,
+      totalPuntos,
+      cantidadPartidosJugados,
+      totalPartidosGanados,
+      totalPartidosPerdidos,
+      totalJornadasGanadas,
+      totalJornadasPerdidas,
+      totalJornadasEmpatados,
+      playerEntity.id,
     );
   }
 }

@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('ADMIN', 'USER');
+
 -- CreateTable
 CREATE TABLE "Player" (
     "id" SERIAL NOT NULL,
@@ -5,6 +8,11 @@ CREATE TABLE "Player" (
     "firstName" TEXT NOT NULL,
     "lastName" TEXT NOT NULL,
     "totalPuntos" INTEGER DEFAULT 0,
+    "totalGanados" INTEGER NOT NULL DEFAULT 0,
+    "totalPerdidos" INTEGER NOT NULL DEFAULT 0,
+    "totalJornadasGanadas" INTEGER NOT NULL DEFAULT 0,
+    "totalJornadasPerdidas" INTEGER NOT NULL DEFAULT 0,
+    "totalJornadasEmpatadas" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Player_pkey" PRIMARY KEY ("id")
 );
@@ -14,6 +22,8 @@ CREATE TABLE "Partido" (
     "id" SERIAL NOT NULL,
     "numero" INTEGER NOT NULL,
     "mapa" TEXT NOT NULL,
+    "rondasCT" INTEGER NOT NULL,
+    "rondasTT" INTEGER NOT NULL,
     "jornadaId" INTEGER,
 
     CONSTRAINT "Partido_pkey" PRIMARY KEY ("id")
@@ -33,8 +43,24 @@ CREATE TABLE "Puntuacion" (
     "puntosObtenidos" INTEGER NOT NULL,
     "jugadorId" INTEGER NOT NULL,
     "partidoId" INTEGER NOT NULL,
+    "partidosGanados" INTEGER NOT NULL DEFAULT 0,
+    "partidosPerdidos" INTEGER NOT NULL DEFAULT 0,
+    "jornadasEmpatados" INTEGER NOT NULL DEFAULT 0,
+    "jornadasGanadas" INTEGER NOT NULL DEFAULT 0,
+    "jornadasPerdidas" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Puntuacion_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "User" (
+    "id" SERIAL NOT NULL,
+    "email" TEXT NOT NULL,
+    "name" TEXT,
+    "password" TEXT NOT NULL,
+    "role" "Role" NOT NULL DEFAULT 'USER',
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -48,6 +74,9 @@ CREATE TABLE "_EquipoTT" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_EquipoCT_AB_unique" ON "_EquipoCT"("A", "B");

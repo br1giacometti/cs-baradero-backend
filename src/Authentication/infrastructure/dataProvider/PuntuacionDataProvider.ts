@@ -7,6 +7,7 @@ import PuntuacionRepository from 'Authentication/application/repository/Puntuaci
 
 import PuntuacionEntity from '../entity/PuntuacionEntity';
 import Puntuacion from 'Authentication/domain/models/Puntuacion';
+import PlayerDataProvider from './PlayerDataProvider';
 
 @Injectable()
 export default class PuntuacionDataProvider implements PuntuacionRepository {
@@ -118,6 +119,9 @@ export default class PuntuacionDataProvider implements PuntuacionRepository {
   ): Puntuacion {
     return new Puntuacion(
       PuntuacionEntity.puntosObtenidos,
+      PuntuacionEntity.jugadorId,
+      PuntuacionEntity.partidoId,
+      undefined,
       undefined,
       undefined,
       PuntuacionEntity.id,

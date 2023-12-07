@@ -5,4 +5,6 @@ export default interface CreatePartidoDto {
   mapa: string;
   equipoCT: Player[];
   equipoTT: Player[];
+  rondasCT: number;
+  rondasTT: number;
 }

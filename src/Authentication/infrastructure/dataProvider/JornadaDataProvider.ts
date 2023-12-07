@@ -20,6 +20,7 @@ export default class JornadaDataProvider implements JornadaRepository {
   }
 
   async insert(jornada: Jornada): Promise<Jornada> {
+    console.log(jornada);
     try {
       const partidos = jornada.partidos.map((partido) =>
         this.mapPartidosDomainToPartidosCreateEntity(partido),
@@ -40,7 +41,7 @@ export default class JornadaDataProvider implements JornadaRepository {
       return JornadaDataProvider.mapEntityToDomain(JornadaEntity);
     } catch (error) {
       console.error('Error al insertar la jornada:', error);
-      // Puedes manejar el error aquí, lanzar una excepción diferente o devolver un valor predeterminado
+
       throw new Error('No se pudo insertar la jornada.');
     }
   }
@@ -132,37 +133,30 @@ export default class JornadaDataProvider implements JornadaRepository {
   };
 
   public static mapEntityToDomain(
-    jornadaEntity: JornadaEntity & {
-      partidos: (PartidoEntity & {
-        equipoCT?: PlayerEntity[];
-        equipoTT?: PlayerEntity[];
-      })[];
-    },
+    jornadaEntity: JornadaEntity & { partidos: Partido[] },
   ): Jornada {
-    const partidos = Array.isArray(jornadaEntity.partidos)
-      ? jornadaEntity.partidos.map((partidoEntity) => {
-          // Calcula las puntuaciones para los jugadores de cada equipo
-          const puntuacionesCT = partidoEntity.equipoCT.map(
-            (player, index) => ({
-              ...player,
-              puntuacion: JornadaDataProvider.calcularPuntuacion(index),
-            }),
-          );
-          const puntuacionesTT = partidoEntity.equipoTT.map(
-            (player, index) => ({
-              ...player,
-              puntuacion: JornadaDataProvider.calcularPuntuacion(index),
-            }),
-          );
+    const partidos = jornadaEntity.partidos;
 
-          return {
-            numero: partidoEntity.numero,
-            mapa: partidoEntity.mapa,
-            equipoCT: puntuacionesCT,
-            equipoTT: puntuacionesTT,
-          };
-        })
-      : [];
+    for (const partido of partidos) {
+      const equipoCTGano = partido.rondasCT > partido.rondasTT;
+      const equipoTTGano = partido.rondasTT > partido.rondasCT;
+
+      for (const jugador of partido.equipoCT) {
+        if (equipoCTGano) {
+          jugador.totalJornadasGanadas++;
+        } else {
+          jugador.totalJornadasPerdidas++;
+        }
+      }
+
+      for (const jugador of partido.equipoTT) {
+        if (equipoTTGano) {
+          jugador.totalJornadasGanadas++;
+        } else {
+          jugador.totalJornadasPerdidas++;
+        }
+      }
+    }
 
     return new Jornada(partidos, jornadaEntity.fecha, jornadaEntity.id);
   }
@@ -170,15 +164,15 @@ export default class JornadaDataProvider implements JornadaRepository {
   private mapPartidosDomainToPartidosCreateEntity(
     partido: Partido,
   ): Prisma.PartidoCreateWithoutJornadaInput {
-    const puntuaciones = partido.equipoCT.map((player, index) =>
-      this.mapQuotasDomainToQuotasCreateEntity(player, index),
+    const puntuacionesCT = partido.equipoCT.map((player, index) =>
+      this.mapQuotasDomainToQuotasCreateEntity(player, index, partido),
     );
 
-    puntuaciones.push(
-      ...partido.equipoTT.map((player, index) =>
-        this.mapQuotasDomainToQuotasCreateEntity(player, index),
-      ),
+    const puntuacionesTT = partido.equipoTT.map((player, index) =>
+      this.mapQuotasDomainToQuotasCreateEntity(player, index, partido),
     );
+
+    const puntuaciones = [...puntuacionesCT, ...puntuacionesTT];
 
     return {
       numero: partido.numero,
@@ -189,6 +183,8 @@ export default class JornadaDataProvider implements JornadaRepository {
       equipoTT: {
         connect: partido.equipoTT.map((player) => ({ id: player.id })),
       },
+      rondasTT: partido.rondasTT,
+      rondasCT: partido.rondasCT,
       puntuaciones: {
         create: puntuaciones,
       },
@@ -198,10 +194,34 @@ export default class JornadaDataProvider implements JornadaRepository {
   private mapQuotasDomainToQuotasCreateEntity(
     jugador: Player,
     index: number,
+    partido: Partido,
   ): Prisma.PuntuacionCreateWithoutPartidoInput {
+    const puntosObtenidos = JornadaDataProvider.calcularPuntuacion(index);
+    const esEquipoCT = partido.equipoCT.includes(jugador);
+    const esEquipoTT = partido.equipoTT.includes(jugador);
+
+    const equipoCTGano = partido.rondasCT > partido.rondasTT;
+    const equipoTTGano = partido.rondasTT > partido.rondasCT;
+
+    let partidoGanado = 0;
+    let partidoPerdido = 0;
+
+    if (esEquipoCT && equipoCTGano) {
+      partidoGanado += 1;
+    } else if (esEquipoTT && equipoTTGano) {
+      partidoGanado += 1;
+    } else {
+      partidoPerdido += 1;
+    }
+
+    // Incrementar las estadísticas según el resultado de la jornada
+    jugador.totalPuntos += puntosObtenidos;
+
     return {
-      puntosObtenidos: JornadaDataProvider.calcularPuntuacion(index),
+      puntosObtenidos,
       jugador: { connect: { id: jugador.id } },
+      partidosGanados: partidoGanado,
+      partidosPerdidos: partidoPerdido,
     };
   }
 }

@@ -1,11 +1,13 @@
 import Player from './Player';
-import Puntuacion from './Puntuacion';
 
 export default class Partido {
   numero: number;
   mapa: string;
   equipoCT: Player[];
   equipoTT: Player[];
+  rondasCT: number;
+  rondasTT: number;
+  jornadasGanadas?: number;
   jornadaId?: number;
   id?: number;
 
@@ -14,7 +16,9 @@ export default class Partido {
     mapa: string,
     equipoCT: Player[],
     equipoTT: Player[],
-
+    rondasCT: number,
+    rondasTT: number,
+    jornadasGanadas?: number,
     jornadaId?: number,
     id?: number,
   ) {
@@ -22,6 +26,9 @@ export default class Partido {
     this.mapa = mapa;
     this.equipoCT = equipoCT;
     this.equipoTT = equipoTT;
+    this.rondasCT = rondasCT;
+    this.rondasTT = rondasTT;
+    this.jornadasGanadas = jornadasGanadas;
     this.jornadaId = jornadaId;
     this.id = id;
   }

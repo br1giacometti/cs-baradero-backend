@@ -15,6 +15,13 @@ export default class PuntuacionService {
     console.log('partidoID', userDto.partidoId);
     const puntuacion = new Puntuacion(
       userDto.puntosObtenidos,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
       userDto.player,
       userDto.partido,
       userDto.partidoId,

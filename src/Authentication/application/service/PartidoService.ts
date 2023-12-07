@@ -17,6 +17,8 @@ export default class PartidoService {
       userDto.mapa,
       userDto.equipoCT,
       userDto.equipoTT,
+      userDto.rondasCT,
+      userDto.rondasTT,
     );
 
     const userCreated = await this.repository.insert(user);
